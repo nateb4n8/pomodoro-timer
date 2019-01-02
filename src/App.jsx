@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import TopNavigation from './components/TopNavigation';
 import Welcome from './pages/Welcome';
 import { curry } from './utils/helpers';
 import AppTheme from './components/AppTheme';
+import Container from './components/Container';
 
 class App extends Component {
   constructor(props) {
@@ -23,8 +23,10 @@ class App extends Component {
       <Router>
         <AppTheme>
 
-          <TopNavigation />
-          <Welcome />
+          {/* <TopNavigation /> */}
+          <Container>
+            <Welcome />
+          </Container>
 
         </AppTheme>
       </Router>
