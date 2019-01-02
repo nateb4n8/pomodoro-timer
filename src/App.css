@@ -1,0 +1,14 @@
+.w-100 { width: 100%; }
+.w-75 { width: 75%; }
+.w-50 { width: 50%; }
+.w-25 { width: 25%; }
+
+.p-1 { padding: 1rem; }
+.pb-1 { padding-bottom: 1rem; }
+
+.p-2 { padding: 2rem; }
+
+.img-fluid {
+  width: 100%;
+  height: auto;
+}
