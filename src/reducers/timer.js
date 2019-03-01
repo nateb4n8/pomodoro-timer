@@ -1,3 +1,4 @@
+import moment from 'moment';
 
 import {
   SET_START_TIME,
@@ -5,12 +6,16 @@ import {
   SET_STATUS_IDLE,
   SET_STATUS_RUNNING,
   SET_STATUS_PAUSED,
+  SET_TIME_REMAINING,
+  UPDATE_TIMER,
 } from '../actions/timer';
 
 const initialState = {
-  startTime: null,
-  completeAmt: 0,
   status: 'IDLE',
+  startTime: null,
+  timeRemaining: moment.duration(25, 'minutes').as('seconds'),
+  completeAmt: 0,
+  sessionAmt: 4,
 };
 
 function timer(state = initialState, action) {
@@ -43,6 +48,19 @@ function timer(state = initialState, action) {
       return {
         ...state,
         status: 'PAUSED',
+      };
+
+    case SET_TIME_REMAINING:
+      return {
+        ...state,
+        timeRemaining: action.timeRemaining,
+      };
+
+    case UPDATE_TIMER:
+      return {
+        ...state,
+        startTime: action.startTime,
+        timeRemaining: action.timeRemaining,
       };
 
     default:

@@ -14,9 +14,9 @@ import WorkIcon from '@material-ui/icons/Work';
 import PauseIcon from '@material-ui/icons/Pause';
 import CoffeeIcon from '@material-ui/icons/FreeBreakfast';
 
-import { setStartTime } from '../../actions/timer';
+import { updateTimer } from '../../actions/timer';
 
-const NOTSTARTED = 'NOTSTARTED';
+const IDLE = 'IDLE';
 const RUNNING = 'RUNNING';
 const PAUSED = 'PAUSED';
 
@@ -25,66 +25,56 @@ class Timer extends Component {
     super(props);
 
     this.state = {
-      timeRemaining: moment.duration(25 * 60 + 15, 'seconds'),
-      startTime: null,
-      status: NOTSTARTED,
       modalOpen: false,
-      amount: 4,
-      completeAmt: 0,
+      intervalId: null,
     };
   }
 
   componentDidMount() {
-    const intervalId = setInterval(() => {
-      let { startTime } = this.props;
+    // const { startTime } = this.props;
 
-      if (startTime === null) startTime = new Date();
+    // if (startTime !== null) {
+    //   const intervalId = setInterval(this.timerWrapper, 500);
 
-      // const { timeRemaining, startTime } = self.state;
+    //   this.setState({ intervalId });
+    // }
+  }
 
-      const timeElapsed = moment.duration(
-        moment().diff(moment(startTime)),
-      );
+  componentWillUnmount() {
+    const { intervalId } = this.state;
 
-      setStartTime(new Date());
+    clearInterval(intervalId);
+  }
 
-      // self.setState({
-      //   timeRemaining: timeRemaining.subtract(timeElapsed, 'mm'),
-      //   startTime: moment(),
-      // });
-    }, 500);
+  timerWrapper = () => {
+    let { dispatch, startTime, timeRemaining } = this.props;
+
+    if (startTime === null) startTime = new Date();
+
+    const timeElapsed = moment.duration(
+      moment().diff(moment(startTime)),
+    );
+
+    console.log(`${timeRemaining} / ${timeElapsed.as('seconds')}`);
+    timeRemaining -= timeElapsed.as('seconds');
+
+    dispatch(updateTimer({
+      startTime: new Date(),
+      timeRemaining,
+    }));
   }
 
   resetTimer = () => {
     const { intervalId } = this.state;
     if (intervalId) clearInterval(intervalId);
 
-    this.setState({
-      modalOpen: false,
-      status: NOTSTARTED,
-      timeRemaining: moment.duration(25 * 60 + 15, 'seconds'), // 25 minutes in seconds
-    });
+    this.setState({ modalOpen: false });
   }
 
   startTimer = () => {
-    const self = this;
+    const intervalId = setInterval(this.timerWrapper, 1000);
 
-    const intervalId = setInterval(() => {
-      const { timeRemaining, startTime } = self.state;
-
-      const timeElapsed = moment.duration(moment().diff(startTime));
-
-      self.setState({
-        timeRemaining: timeRemaining.subtract(timeElapsed, 'mm'),
-        startTime: moment(),
-      });
-    }, 500);
-
-    this.setState({
-      intervalId,
-      startTime: moment(),
-      status: RUNNING,
-    });
+    this.setState({ intervalId });
   }
 
   pauseTimer = () => {
@@ -92,7 +82,7 @@ class Timer extends Component {
 
     clearInterval(intervalId);
 
-    this.setState({ status: PAUSED });
+    // this.setState({ status: PAUSED });
   }
 
   handleClose = () => {
@@ -102,8 +92,9 @@ class Timer extends Component {
   }
 
   onClickControl = () => {
-    const { status } = this.state;
-    if (status === NOTSTARTED || status === PAUSED) {
+    const { status } = this.props;
+
+    if (status === IDLE || status === PAUSED) {
       this.startTimer();
     }
     else if (status === RUNNING) {
@@ -122,13 +113,12 @@ class Timer extends Component {
   }
 
   renderSessions = () => {
-    const { classes } = this.props;
-    const { amount, completeAmt } = this.state;
+    const { classes, sessionAmt, completeAmt } = this.props;
 
     const sessions = [];
 
-    for (let i = 0; i < amount; i += 1) {
-      if (i < amount - completeAmt) {
+    for (let i = 0; i < sessionAmt; i += 1) {
+      if (i < sessionAmt - completeAmt) {
         sessions.push({ color: 'disabled', id: i });
       }
       else {
@@ -146,11 +136,13 @@ class Timer extends Component {
   }
 
   render() {
-    const { classes } = this.props;
-    const { status, timeRemaining, modalOpen } = this.state;
+    const { classes, status, timeRemaining } = this.props;
+    const { modalOpen } = this.state;
 
-    const minutes = timeRemaining.minutes();
-    const seconds = timeRemaining.seconds();
+    const remaining = moment.duration(timeRemaining, 'seconds');
+
+    const minutes = remaining.minutes();
+    const seconds = remaining.seconds();
     const timer = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
     const primaryInput = {
@@ -278,8 +270,18 @@ class Timer extends Component {
 
 Timer.propTypes = {
   classes: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
+
+  timeRemaining: PropTypes.number.isRequired,
+  startTime: PropTypes.object,
+  status: PropTypes.string.isRequired,
+  sessionAmt: PropTypes.number.isRequired,
+  completeAmt: PropTypes.number.isRequired,
 };
 
+Timer.defaultProps = {
+  startTime: null,
+};
 
 const styles = theme => ({
   reset: {
