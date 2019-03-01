@@ -21,6 +21,7 @@
     }
   },
   "rules": {
-    "react/forbid-prop-types": ["off"]
+    "react/forbid-prop-types": ["off"],
+    "brace-style": [2, "stroustrup", { "allowSingleLine": true }]
   }
 }
