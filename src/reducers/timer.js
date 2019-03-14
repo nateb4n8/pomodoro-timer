@@ -1,66 +1,96 @@
 import moment from 'moment';
 
 import {
-  SET_START_TIME,
-  INC_COMPLETED,
-  SET_STATUS_IDLE,
-  SET_STATUS_RUNNING,
-  SET_STATUS_PAUSED,
-  SET_TIME_REMAINING,
   UPDATE_TIMER,
+  RESET_SESSION,
+  SET_PAUSED,
+  SET_WORK_STARTED,
+  WORK_COMPLETE,
+  SET_BREAK_COMPLETE,
+  SET_BREAK_STARTED,
 } from '../actions/timer';
+
+const initialWorkTimer = {
+  type: 'WORK',
+  duration: moment.duration(0.1, 'minutes').as('seconds'),
+  timeRemaining: moment.duration(0.1, 'minutes').as('seconds'),
+};
+
+const initialBreakTimer = {
+  type: 'BREAK',
+  duration: moment.duration(0.05, 'minutes').as('seconds'),
+  timeRemaining: moment.duration(0.05, 'minutes').as('seconds'),
+};
 
 const initialState = {
   status: 'IDLE',
   startTime: null,
-  timeRemaining: moment.duration(25, 'minutes').as('seconds'),
   completeAmt: 0,
   sessionAmt: 4,
+  timeIntervals: [],
+  ...initialWorkTimer,
 };
+
+function getTimeElapsed(date) {
+  const now = moment();
+  const prev = moment(date);
+  const diff = moment.duration(now.diff(prev)).as('seconds');
+  return Math.round(diff);
+}
 
 function timer(state = initialState, action) {
   switch (action.type) {
-    case SET_START_TIME:
-      return {
-        ...state,
-        startTime: action.time,
-      };
-
-    case INC_COMPLETED:
-      return {
-        ...state,
-        completeAmt: state.completeAmt + 1,
-      };
-
-    case SET_STATUS_IDLE:
-      return {
-        ...state,
-        status: 'IDLE',
-      };
-
-    case SET_STATUS_RUNNING:
-      return {
-        ...state,
-        status: 'RUNNING',
-      };
-
-    case SET_STATUS_PAUSED:
-      return {
-        ...state,
-        status: 'PAUSED',
-      };
-
-    case SET_TIME_REMAINING:
-      return {
-        ...state,
-        timeRemaining: action.timeRemaining,
-      };
-
     case UPDATE_TIMER:
       return {
         ...state,
-        startTime: action.startTime,
         timeRemaining: action.timeRemaining,
+      };
+
+    case RESET_SESSION:
+      return initialState;
+
+    case SET_WORK_STARTED:
+      return {
+        ...state,
+        ...initialWorkTimer,
+        status: 'RUNNING',
+        startTime: new Date(),
+      };
+
+    case SET_BREAK_STARTED:
+      return {
+        ...state,
+        ...initialBreakTimer,
+        status: 'RUNNING',
+        startTime: new Date(),
+      };
+
+    case SET_PAUSED:
+      return {
+        ...state,
+        status: 'PAUSED',
+        startTime: null,
+        timeIntervals: [
+          ...state.timeIntervals,
+          getTimeElapsed(state.startTime),
+        ],
+      };
+
+    case WORK_COMPLETE:
+      return {
+        ...state,
+        completeAmt: state.completeAmt + 1,
+        status: 'IDLE',
+        timeIntervals: [],
+        timeRemaining: 0,
+      };
+    
+    case SET_BREAK_COMPLETE:
+      return {
+        ...state,
+        ...initialWorkTimer,
+        status: 'IDLE',
+        startTime: null,
       };
 
     default:

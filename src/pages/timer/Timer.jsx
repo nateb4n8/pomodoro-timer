@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  Grid, Typography, Fab, Modal, Button,
+  Grid, Typography, Fab, Modal, Button, SnackbarContent, IconButton,
 } from '@material-ui/core/';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import PlayIcon from '@material-ui/icons/PlayArrow';
@@ -13,12 +13,26 @@ import StopIcon from '@material-ui/icons/Stop';
 import WorkIcon from '@material-ui/icons/Work';
 import PauseIcon from '@material-ui/icons/Pause';
 import CoffeeIcon from '@material-ui/icons/FreeBreakfast';
+import CloseIcon from '@material-ui/icons/Close';
+import InfoIcon from '@material-ui/icons/Info';
+import Snackbar from '@material-ui/core/Snackbar';
+import amber from '@material-ui/core/colors/amber';
 
-import { updateTimer } from '../../actions/timer';
+import {
+  resetSession,
+  updateTimer,
+  setWorkStarted,
+  setPaused,
+  workComplete,
+  setBreakComplete,
+  setBreakStarted,
+} from '../../actions/timer';
+
 
 const IDLE = 'IDLE';
 const RUNNING = 'RUNNING';
 const PAUSED = 'PAUSED';
+
 
 class Timer extends Component {
   constructor(props) {
@@ -27,17 +41,18 @@ class Timer extends Component {
     this.state = {
       modalOpen: false,
       intervalId: null,
+      stopRequest: false,
+      breakRequest: false,
+      breakSnackbarOpen: false,
     };
   }
 
   componentDidMount() {
-    // const { startTime } = this.props;
+    const { status } = this.props;
 
-    // if (startTime !== null) {
-    //   const intervalId = setInterval(this.timerWrapper, 500);
-
-    //   this.setState({ intervalId });
-    // }
+    if (status === RUNNING) {
+      this.startTimer();
+    }
   }
 
   componentWillUnmount() {
@@ -46,48 +61,95 @@ class Timer extends Component {
     clearInterval(intervalId);
   }
 
-  timerWrapper = () => {
-    let { dispatch, startTime, timeRemaining } = this.props;
+  getTimeRemaining = () => {
+    const { startTime, duration, timeIntervals } = this.props;
 
-    if (startTime === null) startTime = new Date();
-
-    const timeElapsed = moment.duration(
-      moment().diff(moment(startTime)),
+    let timeElapsed = moment.duration(
+      moment().diff(
+        moment(startTime || new Date()),
+      ),
     );
+    timeElapsed = Math.round(timeElapsed.as('seconds'));
 
-    console.log(`${timeRemaining} / ${timeElapsed.as('seconds')}`);
-    timeRemaining -= timeElapsed.as('seconds');
+    timeElapsed += timeIntervals.reduce((a, v) => a + v, 0);
 
-    dispatch(updateTimer({
-      startTime: new Date(),
-      timeRemaining,
-    }));
+    return duration - timeElapsed;
+  }
+
+  timerWrapper = () => {
+    const { dispatch, type } = this.props;
+
+    const timeRemaining = this.getTimeRemaining();
+
+    if (timeRemaining <= 0) {
+      if (type === 'WORK') {
+        const { intervalId } = this.state;
+        clearInterval(intervalId);
+
+        this.setState({
+          breakRequest: true,
+          modalOpen: true,
+        });
+        dispatch(workComplete());
+      }
+      else {
+        const { intervalId } = this.state;
+        clearInterval(intervalId);
+
+        dispatch(setBreakComplete());
+
+        this.setState({
+          breakSnackbarOpen: true,
+        });
+      }
+    }
+    else dispatch(updateTimer({ timeRemaining }));
   }
 
   resetTimer = () => {
+    // stop timer from updating global state
     const { intervalId } = this.state;
     if (intervalId) clearInterval(intervalId);
 
+    // reset timer to defaults
+    const { dispatch } = this.props;
+    dispatch(resetSession());
+
+    // close the "are you sure" modal
     this.setState({ modalOpen: false });
   }
 
   startTimer = () => {
-    const intervalId = setInterval(this.timerWrapper, 1000);
+    const { dispatch } = this.props;
+    dispatch(setWorkStarted());
 
+    const intervalId = setInterval(this.timerWrapper, 1000);
     this.setState({ intervalId });
   }
 
-  pauseTimer = () => {
+  onClickPaused = () => {
     const { intervalId } = this.state;
-
     clearInterval(intervalId);
 
-    // this.setState({ status: PAUSED });
+    const { dispatch } = this.props;
+    dispatch(setPaused());
+    // dispatch(setStartTime(null));
+    // dispatch(setStatusPaused());
   }
 
   handleClose = () => {
+    this.resetTimer();
+
     this.setState({
       modalOpen: false,
+      stopRequest: false,
+      breakRequest: false,
+    });
+  }
+
+  closeBreakSnackbar = () => {
+    this.setState({
+      breakSnackbarOpen: false,
     });
   }
 
@@ -109,7 +171,30 @@ class Timer extends Component {
   onClickStop = () => {
     this.setState({
       modalOpen: true,
+      stopRequest: true,
     });
+  }
+
+  onClickResume = () => {
+    console.log('resuming');
+    // TODO
+  }
+
+
+  onClickStartWork = () => {
+    const { dispatch } = this.props;
+    dispatch(setWorkStarted());
+
+    const intervalId = setInterval(this.timerWrapper, 1000);
+    this.setState({ intervalId });
+  }
+
+  onClickStartBreak = () => {
+    const { dispatch } = this.props;
+    dispatch(setBreakStarted());
+
+    const intervalId = setInterval(this.timerWrapper, 1000);
+    this.setState({ intervalId });
   }
 
   renderSessions = () => {
@@ -135,39 +220,157 @@ class Timer extends Component {
     );
   }
 
-  render() {
-    const { classes, status, timeRemaining } = this.props;
-    const { modalOpen } = this.state;
+  renderStop = () => {
+    const { classes } = this.props;
 
+    return (
+      <div>
+        <Typography variant="body1">Are you sure you want to stop?</Typography>
+        <div>
+          <Button
+            className={classes.button}
+            onClick={this.handleClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            className={classes.button}
+            onClick={this.resetTimer}
+          >
+            Ok
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  renderBreak = () => {
+    const { classes } = this.props;
+
+    return (
+      <div>
+        <Typography variant="body1">Do you want to take a break?</Typography>
+        <div>
+          <Button
+            className={classes.button}
+            onClick={() => { this.onClickStartWork(); this.handleClose(); }}
+          >
+            No
+          </Button>
+          <Button
+            className={classes.button}
+            onClick={() => { this.onClickStartBreak(); this.handleClose(); }}
+          >
+            Yes
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  renderIdleActions = () => {
+    const { classes } = this.props;
+
+    return (
+      <Grid container justify="center" alignItems="center">
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Start Work Timer"
+            className={classes.fab}
+            onClick={this.onClickStartWork}
+          >
+            <WorkIcon />
+          </Fab>
+        </Grid>
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Start Break Timer"
+            className={classes.fab}
+            onClick={this.onClickStartBreak}
+          >
+            <CoffeeIcon />
+          </Fab>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  renderRunningActions = () => {
+    const { classes } = this.props;
+
+    return (
+      <Grid container justify="center" alignItems="center">
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Pause Timer"
+            className={classes.fab}
+            onClick={this.onClickPaused}
+          >
+            <PauseIcon />
+          </Fab>
+        </Grid>
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Stop Timer"
+            className={classes.fab}
+            onClick={this.onClickStop}
+          >
+            <StopIcon />
+          </Fab>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  renderPausedActions = () => {
+    const { classes } = this.props;
+
+    return (
+      <Grid container justify="center" alignItems="center">
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Resume Timer"
+            className={classes.fab}
+            onClick={this.onClickStartWork}
+          >
+            <PlayIcon />
+          </Fab>
+        </Grid>
+        <Grid item>
+          <Fab
+            color="primary"
+            aria-label="Stop Timer"
+            className={classes.fab}
+            onClick={this.onClickStop}
+          >
+            <StopIcon />
+          </Fab>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  render() {
+    const {
+ classes, status, duration, type 
+} = this.props;
+    const {
+ modalOpen, breakRequest, stopRequest, breakSnackbarOpen 
+} = this.state;
+
+    const timeRemaining = this.getTimeRemaining();
     const remaining = moment.duration(timeRemaining, 'seconds');
 
     const minutes = remaining.minutes();
     const seconds = remaining.seconds();
     const timer = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-    const primaryInput = {
-      ariaLabel: 'Start Timer',
-      icon: <WorkIcon />,
-      action: this.startTimer,
-    };
-    const secondaryInput = {
-      ariaLabel: 'Stop Timer',
-      icon: <StopIcon />,
-      action: this.onClickStop,
-    };
-
-    if (status === RUNNING) {
-      primaryInput.ariaLabel = 'Pause Timer';
-      primaryInput.icon = <PauseIcon />;
-    }
-    else if (status === PAUSED) {
-      primaryInput.ariaLabel = 'Resume Timer';
-      primaryInput.icon = <PlayIcon />;
-    }
-    else {
-      secondaryInput.ariaLabel = 'Start Break Timer';
-      secondaryInput.icon = <CoffeeIcon />;
-    }
+    const progress = (timeRemaining / duration) * 100;
 
     return (
       <Grid
@@ -187,7 +390,7 @@ class Timer extends Component {
           <Grid container justify="center" alignItems="center">
             <Grid item>
               <CircularProgress
-                value={100}
+                value={progress}
                 size={200}
                 thickness={2}
                 variant="static"
@@ -206,31 +409,9 @@ class Timer extends Component {
         </Grid>
 
         <Grid item>
-          <Grid container justify="center" alignItems="center">
-
-            <Grid item>
-              <Fab
-                color="primary"
-                aria-label={primaryInput.ariaLabel}
-                className={classes.fab}
-                onClick={this.onClickControl}
-              >
-                {primaryInput.icon}
-              </Fab>
-            </Grid>
-
-            <Grid item>
-              <Fab
-                color="primary"
-                aria-label={secondaryInput.ariaLabel}
-                className={classes.fab}
-                onClick={secondaryInput.action}
-              >
-                {secondaryInput.icon}
-              </Fab>
-            </Grid>
-
-          </Grid>
+          { status === IDLE && this.renderIdleActions() }
+          { status === RUNNING && this.renderRunningActions() }
+          { status === PAUSED && this.renderPausedActions() }
         </Grid>
 
         <Modal
@@ -242,27 +423,44 @@ class Timer extends Component {
         >
           <div className={classes.paper}>
             <Grid container direction="column" justify="center" alignItems="center">
-              <Typography variant="body1" id="modal-title">
-                Are you sure you want to stop?
-              </Typography>
-              <div>
-                <Button
-                  className={classes.button}
-                  onClick={this.handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className={classes.button}
-                  onClick={this.resetTimer}
-                >
-                  Ok
-                </Button>
-              </div>
+              { breakRequest ? this.renderBreak() : null }
+              { stopRequest ? this.renderStop() : null }
             </Grid>
           </div>
         </Modal>
 
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={breakSnackbarOpen}
+          onClose={this.closeBreakSnackbar}
+          // autoHideDuration={5000}
+          ContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+        >
+          <SnackbarContent
+            className={classes.breakOver}
+            aria-describedby="client-snackbar"
+            message={
+              (
+                <span id="client-snackbar" className={classes.message}>
+                  <InfoIcon className={classes.icon} />
+                  Break time over!
+                </span>
+              )
+            }
+            action={(
+              <IconButton
+                aria-label="Close"
+                color="inherit"
+                className={classes.close}
+                onClick={this.closeBreakSnackbar}
+              >
+                <CloseIcon className={classes.closeIcon} />
+              </IconButton>
+            )}
+          />
+        </Snackbar>
       </Grid>
     );
   }
@@ -277,6 +475,8 @@ Timer.propTypes = {
   status: PropTypes.string.isRequired,
   sessionAmt: PropTypes.number.isRequired,
   completeAmt: PropTypes.number.isRequired,
+  duration: PropTypes.number.isRequired,
+  type: PropTypes.string.isRequired,
 };
 
 Timer.defaultProps = {
@@ -315,6 +515,22 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  message: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  icon: {
+    fontSize: 20,
+    opacity: 0.9,
+    marginRight: theme.spacing.unit,
+  },
+  closeIcon: {
+    fontSize: 20,
+    opacity: 0.9,
+  },
+  breakOver: {
+    backgroundColor: amber[700],
   },
 });
 
