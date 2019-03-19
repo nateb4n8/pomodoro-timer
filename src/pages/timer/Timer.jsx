@@ -37,6 +37,35 @@ const RUNNING = 'RUNNING';
 const PAUSED = 'PAUSED';
 
 
+const StartButton = ({ onClick }) => (
+  <FloatButton aria="Start Work Timer" onClick={onClick}>
+    <WorkIcon />
+  </FloatButton>
+);
+StartButton.propTypes = { onClick: PropTypes.func.isRequired };
+
+const PauseButton = ({ onClick }) => (
+  <FloatButton aria="Pause Timer" onClick={onClick}>
+    <PauseIcon />
+  </FloatButton>
+);
+PauseButton.propTypes = { onClick: PropTypes.func.isRequired };
+
+const StopButton = ({ onClick }) => (
+  <FloatButton aria="Stop Timer" onClick={onClick}>
+    <StopIcon />
+  </FloatButton>
+);
+StopButton.propTypes = { onClick: PropTypes.func.isRequired };
+
+const BreakButton = ({ onClick }) => (
+  <FloatButton aria="Start Break Timer" onClick={onClick}>
+    <CoffeeIcon />
+  </FloatButton>
+);
+BreakButton.propTypes = { onClick: PropTypes.func.isRequired };
+
+
 class Timer extends Component {
   constructor(props) {
     super(props);
@@ -248,65 +277,6 @@ class Timer extends Component {
     );
   }
 
-  renderIdleActions = () => (
-    <Grid container justify="center" alignItems="center">
-      <Grid item>
-        <FloatButton aria="Start Work Timer" onClick={this.onClickStartWork}>
-          <WorkIcon />
-        </FloatButton>
-      </Grid>
-      <Grid item>
-        <FloatButton aria="Start Break Timer" onClick={this.onClickStartBreak}>
-          <CoffeeIcon />
-        </FloatButton>
-      </Grid>
-    </Grid>
-  )
-
-  renderRunningActions = () => (
-    <Grid container justify="center" alignItems="center">
-      <Grid item>
-        <FloatButton aria="Pause Timer" onClick={this.onClickPaused}>
-          <PauseIcon />
-        </FloatButton>
-      </Grid>
-      <Grid item>
-        <FloatButton aria="Stop Timer" onClick={this.onClickStop}>
-          <StopIcon />
-        </FloatButton>
-      </Grid>
-    </Grid>
-  )
-
-  renderPausedActions = () => {
-    const { classes } = this.props;
-
-    return (
-      <Grid container justify="center" alignItems="center">
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Resume Timer"
-            className={classes.fab}
-            onClick={this.onClickStartWork}
-          >
-            <PlayIcon />
-          </Fab>
-        </Grid>
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Stop Timer"
-            className={classes.fab}
-            onClick={this.onClickStop}
-          >
-            <StopIcon />
-          </Fab>
-        </Grid>
-      </Grid>
-    );
-  }
-
   render() {
     const {
       classes, status, duration, type, sessionAmt, completeAmt,
@@ -364,9 +334,20 @@ class Timer extends Component {
         </Grid>
 
         <Grid item>
-          { status === IDLE && this.renderIdleActions() }
-          { status === RUNNING && this.renderRunningActions() }
-          { status === PAUSED && this.renderPausedActions() }
+          <Grid container justify="center" alignItems="center">
+            <Grid item>
+              { status === IDLE || status === PAUSED
+                ? <StartButton onClick={this.onClickStartWork} />
+                : <PauseButton onClick={this.onClickPaused} />
+              }
+            </Grid>
+            <Grid item>
+              { status === RUNNING || status === PAUSED
+                ? <StopButton onClick={this.onClickStop} />
+                : <BreakButton onClick={this.onClickStartBreak} />
+              }
+            </Grid>
+          </Grid>
         </Grid>
 
         <Modal
