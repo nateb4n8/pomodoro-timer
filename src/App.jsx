@@ -30,7 +30,7 @@ class App extends Component {
               <Route path="/" component={Timer} />
             </Switch>
           </Container>
-          <BottomNavigation />
+          {/* <BottomNavigation /> */}
         </AppTheme>
       </Router>
     );

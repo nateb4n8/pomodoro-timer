@@ -18,6 +18,9 @@ import InfoIcon from '@material-ui/icons/Info';
 import Snackbar from '@material-ui/core/Snackbar';
 import amber from '@material-ui/core/colors/amber';
 
+import CompletedSessions from './CompletedSessions';
+import FloatButton from './FloatButton';
+
 import {
   resetSession,
   updateTimer,
@@ -138,7 +141,7 @@ class Timer extends Component {
   }
 
   handleClose = () => {
-    this.resetTimer();
+    // this.resetTimer();
 
     this.setState({
       modalOpen: false,
@@ -197,29 +200,6 @@ class Timer extends Component {
     this.setState({ intervalId });
   }
 
-  renderSessions = () => {
-    const { classes, sessionAmt, completeAmt } = this.props;
-
-    const sessions = [];
-
-    for (let i = 0; i < sessionAmt; i += 1) {
-      if (i < sessionAmt - completeAmt) {
-        sessions.push({ color: 'disabled', id: i });
-      }
-      else {
-        sessions.push({ color: 'primary', id: i });
-      }
-    }
-
-    return (
-      <Grid container>
-        { sessions.map(({ color, id }) => (
-          <WorkIcon className={classes.lapIcon} color={color} key={id} />))
-        }
-      </Grid>
-    );
-  }
-
   renderStop = () => {
     const { classes } = this.props;
 
@@ -268,63 +248,35 @@ class Timer extends Component {
     );
   }
 
-  renderIdleActions = () => {
-    const { classes } = this.props;
-
-    return (
-      <Grid container justify="center" alignItems="center">
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Start Work Timer"
-            className={classes.fab}
-            onClick={this.onClickStartWork}
-          >
-            <WorkIcon />
-          </Fab>
-        </Grid>
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Start Break Timer"
-            className={classes.fab}
-            onClick={this.onClickStartBreak}
-          >
-            <CoffeeIcon />
-          </Fab>
-        </Grid>
+  renderIdleActions = () => (
+    <Grid container justify="center" alignItems="center">
+      <Grid item>
+        <FloatButton aria="Start Work Timer" onClick={this.onClickStartWork}>
+          <WorkIcon />
+        </FloatButton>
       </Grid>
-    );
-  }
-
-  renderRunningActions = () => {
-    const { classes } = this.props;
-
-    return (
-      <Grid container justify="center" alignItems="center">
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Pause Timer"
-            className={classes.fab}
-            onClick={this.onClickPaused}
-          >
-            <PauseIcon />
-          </Fab>
-        </Grid>
-        <Grid item>
-          <Fab
-            color="primary"
-            aria-label="Stop Timer"
-            className={classes.fab}
-            onClick={this.onClickStop}
-          >
-            <StopIcon />
-          </Fab>
-        </Grid>
+      <Grid item>
+        <FloatButton aria="Start Break Timer" onClick={this.onClickStartBreak}>
+          <CoffeeIcon />
+        </FloatButton>
       </Grid>
-    );
-  }
+    </Grid>
+  )
+
+  renderRunningActions = () => (
+    <Grid container justify="center" alignItems="center">
+      <Grid item>
+        <FloatButton aria="Pause Timer" onClick={this.onClickPaused}>
+          <PauseIcon />
+        </FloatButton>
+      </Grid>
+      <Grid item>
+        <FloatButton aria="Stop Timer" onClick={this.onClickStop}>
+          <StopIcon />
+        </FloatButton>
+      </Grid>
+    </Grid>
+  )
 
   renderPausedActions = () => {
     const { classes } = this.props;
@@ -357,11 +309,11 @@ class Timer extends Component {
 
   render() {
     const {
- classes, status, duration, type 
-} = this.props;
+      classes, status, duration, type, sessionAmt, completeAmt,
+    } = this.props;
     const {
- modalOpen, breakRequest, stopRequest, breakSnackbarOpen 
-} = this.state;
+      modalOpen, breakRequest, stopRequest, breakSnackbarOpen,
+    } = this.state;
 
     const timeRemaining = this.getTimeRemaining();
     const remaining = moment.duration(timeRemaining, 'seconds');
@@ -383,7 +335,10 @@ class Timer extends Component {
       >
 
         <Grid item>
-          { this.renderSessions() }
+          <CompletedSessions
+            sessionAmt={sessionAmt}
+            completeAmt={completeAmt}
+          />
         </Grid>
 
         <Grid item>
@@ -433,7 +388,7 @@ class Timer extends Component {
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           open={breakSnackbarOpen}
           onClose={this.closeBreakSnackbar}
-          // autoHideDuration={5000}
+          autoHideDuration={5000}
           ContentProps={{
             'aria-describedby': 'message-id',
           }}
