@@ -16,7 +16,7 @@ self.__precacheManifest = [
     "url": "/pomodoro-timer/static/css/main.23e6fe88.chunk.css"
   },
   {
-    "revision": "de4d553485b9f8f7fb906d8367058f78",
+    "revision": "3ac76fab53c4bfd8a296471dc7e1a449",
     "url": "/pomodoro-timer/index.html"
   }
 ];
