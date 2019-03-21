@@ -4,22 +4,20 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  Grid, Typography, Fab, Modal, Button, SnackbarContent, IconButton,
-} from '@material-ui/core/';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import Modal from '@material-ui/core/Modal';
+import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import PlayIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
 import WorkIcon from '@material-ui/icons/Work';
 import PauseIcon from '@material-ui/icons/Pause';
 import CoffeeIcon from '@material-ui/icons/FreeBreakfast';
-import CloseIcon from '@material-ui/icons/Close';
-import InfoIcon from '@material-ui/icons/Info';
-import Snackbar from '@material-ui/core/Snackbar';
 import amber from '@material-ui/core/colors/amber';
 
 import CompletedSessions from './CompletedSessions';
 import FloatButton from './FloatButton';
+import Notification from './Notification';
 
 import {
   resetSession,
@@ -365,38 +363,13 @@ class Timer extends Component {
           </div>
         </Modal>
 
-        <Snackbar
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        <Notification
           open={breakSnackbarOpen}
           onClose={this.closeBreakSnackbar}
-          autoHideDuration={5000}
-          ContentProps={{
-            'aria-describedby': 'message-id',
-          }}
-        >
-          <SnackbarContent
-            className={classes.breakOver}
-            aria-describedby="client-snackbar"
-            message={
-              (
-                <span id="client-snackbar" className={classes.message}>
-                  <InfoIcon className={classes.icon} />
-                  Break time over!
-                </span>
-              )
-            }
-            action={(
-              <IconButton
-                aria-label="Close"
-                color="inherit"
-                className={classes.close}
-                onClick={this.closeBreakSnackbar}
-              >
-                <CloseIcon className={classes.closeIcon} />
-              </IconButton>
-            )}
-          />
-        </Snackbar>
+          onClick={this.closeBreakSnackbar}
+          msg="Break time over!"
+          timeout={5000}
+        />
       </Grid>
     );
   }
