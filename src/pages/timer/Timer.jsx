@@ -6,8 +6,6 @@ import moment from 'moment';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import Modal from '@material-ui/core/Modal';
-import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import StopIcon from '@material-ui/icons/Stop';
 import WorkIcon from '@material-ui/icons/Work';
@@ -18,6 +16,7 @@ import amber from '@material-ui/core/colors/amber';
 import CompletedSessions from './CompletedSessions';
 import FloatButton from './FloatButton';
 import Notification from './Notification';
+import Confirmation from './Confirmation';
 
 import {
   resetSession,
@@ -205,12 +204,6 @@ class Timer extends Component {
     });
   }
 
-  onClickResume = () => {
-    console.log('resuming');
-    // TODO
-  }
-
-
   onClickStartWork = () => {
     const { dispatch } = this.props;
     dispatch(setWorkStarted());
@@ -227,57 +220,9 @@ class Timer extends Component {
     this.setState({ intervalId });
   }
 
-  renderStop = () => {
-    const { classes } = this.props;
-
-    return (
-      <div>
-        <Typography variant="body1">Are you sure you want to stop?</Typography>
-        <div>
-          <Button
-            className={classes.button}
-            onClick={this.handleClose}
-          >
-            Cancel
-          </Button>
-          <Button
-            className={classes.button}
-            onClick={this.resetTimer}
-          >
-            Ok
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  renderBreak = () => {
-    const { classes } = this.props;
-
-    return (
-      <div>
-        <Typography variant="body1">Do you want to take a break?</Typography>
-        <div>
-          <Button
-            className={classes.button}
-            onClick={() => { this.onClickStartWork(); this.handleClose(); }}
-          >
-            No
-          </Button>
-          <Button
-            className={classes.button}
-            onClick={() => { this.onClickStartBreak(); this.handleClose(); }}
-          >
-            Yes
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   render() {
     const {
-      classes, status, duration, type, sessionAmt, completeAmt,
+      classes, status, duration, sessionAmt, completeAmt,
     } = this.props;
     const {
       modalOpen, breakRequest, stopRequest, breakSnackbarOpen,
@@ -348,20 +293,26 @@ class Timer extends Component {
           </Grid>
         </Grid>
 
-        <Modal
-          aria-labelledby="simple-modal-title"
-          aria-describedby="simple-modal-description"
-          open={modalOpen}
-          onClose={this.handleClose}
-          className={classes.modal}
-        >
-          <div className={classes.paper}>
-            <Grid container direction="column" justify="center" alignItems="center">
-              { breakRequest ? this.renderBreak() : null }
-              { stopRequest ? this.renderStop() : null }
-            </Grid>
-          </div>
-        </Modal>
+        { breakRequest
+          && (
+          <Confirmation
+            open={modalOpen}
+            onClose={this.handleClose}
+            onClickYes={() => { this.onClickStartBreak(); this.handleClose(); }}
+            onClickNo={() => { this.onClickStartWork(); this.handleClose(); }}
+            msg="Do you want to take a break?"
+          />)
+        }
+        { stopRequest
+          && (
+          <Confirmation
+            open={modalOpen}
+            onClose={this.handleClose}
+            onClickYes={this.resetTimer}
+            onClickNo={this.handleClose}
+            msg="Are you sure you want to stop?"
+          />)
+        }
 
         <Notification
           open={breakSnackbarOpen}
@@ -379,13 +330,13 @@ Timer.propTypes = {
   classes: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
 
-  timeRemaining: PropTypes.number.isRequired,
   startTime: PropTypes.object,
   status: PropTypes.string.isRequired,
   sessionAmt: PropTypes.number.isRequired,
   completeAmt: PropTypes.number.isRequired,
   duration: PropTypes.number.isRequired,
   type: PropTypes.string.isRequired,
+  timeIntervals: PropTypes.array.isRequired,
 };
 
 Timer.defaultProps = {
