@@ -11,10 +11,9 @@ import StopIcon from '@material-ui/icons/Stop';
 import WorkIcon from '@material-ui/icons/Work';
 import PauseIcon from '@material-ui/icons/Pause';
 import CoffeeIcon from '@material-ui/icons/FreeBreakfast';
-import amber from '@material-ui/core/colors/amber';
 
 import CompletedSessions from './CompletedSessions';
-import FloatButton from './FloatButton';
+import Fab from './FloatButton';
 import Notification from './Notification';
 import Confirmation from './Confirmation';
 
@@ -35,30 +34,22 @@ const PAUSED = 'PAUSED';
 
 
 const StartButton = ({ onClick }) => (
-  <FloatButton aria="Start Work Timer" onClick={onClick}>
-    <WorkIcon />
-  </FloatButton>
+  <Fab aria="Start Work Timer" onClick={onClick}><WorkIcon /></Fab>
 );
 StartButton.propTypes = { onClick: PropTypes.func.isRequired };
 
 const PauseButton = ({ onClick }) => (
-  <FloatButton aria="Pause Timer" onClick={onClick}>
-    <PauseIcon />
-  </FloatButton>
+  <Fab aria="Pause Timer" onClick={onClick}><PauseIcon /></Fab>
 );
 PauseButton.propTypes = { onClick: PropTypes.func.isRequired };
 
 const StopButton = ({ onClick }) => (
-  <FloatButton aria="Stop Timer" onClick={onClick}>
-    <StopIcon />
-  </FloatButton>
+  <Fab aria="Stop Timer" onClick={onClick}><StopIcon /></Fab>
 );
 StopButton.propTypes = { onClick: PropTypes.func.isRequired };
 
 const BreakButton = ({ onClick }) => (
-  <FloatButton aria="Start Break Timer" onClick={onClick}>
-    <CoffeeIcon />
-  </FloatButton>
+  <Fab aria="Start Break Timer" onClick={onClick}><CoffeeIcon /></Fab>
 );
 BreakButton.propTypes = { onClick: PropTypes.func.isRequired };
 
@@ -162,13 +153,9 @@ class Timer extends Component {
 
     const { dispatch } = this.props;
     dispatch(setPaused());
-    // dispatch(setStartTime(null));
-    // dispatch(setStatusPaused());
   }
 
   handleClose = () => {
-    // this.resetTimer();
-
     this.setState({
       modalOpen: false,
       stopRequest: false,
@@ -180,17 +167,6 @@ class Timer extends Component {
     this.setState({
       breakSnackbarOpen: false,
     });
-  }
-
-  onClickControl = () => {
-    const { status } = this.props;
-
-    if (status === IDLE || status === PAUSED) {
-      this.startTimer();
-    }
-    else if (status === RUNNING) {
-      this.pauseTimer();
-    }
   }
 
   onClickReset = () => {
@@ -343,56 +319,11 @@ Timer.defaultProps = {
   startTime: null,
 };
 
-const styles = theme => ({
-  reset: {
-    color: theme.palette.getContrastText(theme.palette.warning.main),
-    backgroundColor: theme.palette.warning.main,
-    '&:hover': {
-      backgroundColor: theme.palette.warning.dark,
-    },
-  },
+const styles = {
   container: {
     height: '100%',
   },
-  fab: {
-    marginLeft: '1rem',
-    marginRight: '1rem',
-  },
-  lapIcon: {
-    width: '1.5em',
-    height: '1.5em',
-  },
-  paper: {
-    position: 'absolute',
-    width: theme.spacing.unit * 50,
-    maxWidth: '100%',
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing.unit * 2,
-    outline: 'none',
-  },
-  modal: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  message: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  icon: {
-    fontSize: 20,
-    opacity: 0.9,
-    marginRight: theme.spacing.unit,
-  },
-  closeIcon: {
-    fontSize: 20,
-    opacity: 0.9,
-  },
-  breakOver: {
-    backgroundColor: amber[700],
-  },
-});
+};
 
 function mapStateToProps({ timer }) {
   return {
