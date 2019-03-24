@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 
+import TimerForm from './TimerForm';
+
 
 const styles = theme => ({});
 
@@ -8,7 +10,10 @@ const styles = theme => ({});
 class Settings extends Component {
   render() {
     return (
-      <h2>Settings</h2>
+      <div>
+        <h2>Settings</h2>
+        <TimerForm />
+      </div>
     );
   }
 }

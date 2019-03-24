@@ -32,7 +32,7 @@ class BottomAppBar extends Component {
           >
             <WorkIcon />
           </IconButton>
-          <IconButton
+          {/* <IconButton
             color={currentPage === '/statistics/' ? 'secondary' : 'inherit'}
             aria-label="Open statistics"
             onClick={() => this.handleClick('/statistics/')}
@@ -40,7 +40,7 @@ class BottomAppBar extends Component {
             to="/statistics/"
           >
             <ChartIcon />
-          </IconButton>
+          </IconButton> */}
           <IconButton
             color={currentPage === '/settings/' ? 'secondary' : 'inherit'}
             aria-label="Open settings"
