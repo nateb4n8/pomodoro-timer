@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  TextField, Switch, Grid, FormControlLabel,
+  TextField, Switch, Grid, FormControlLabel, FormLabel,
 } from '@material-ui/core';
 
 
-const styles = theme => ({});
+const styles = theme => ({
+  w100: {
+    width: '100%',
+  },
+});
 
 
 function formBuilder(form, onChange) {
@@ -61,18 +65,13 @@ function SwitchInput(props) {
     label, value, onChange, dependents,
   } = props;
   return (
-    <Grid item>
-      <FormControlLabel
-        control={(
-          <Switch
-            checked={value}
-            onChange={onChange}
-            value={label}
-            color="primary"
-          />
-        )}
-        label={label}
-        labelPlacement="start"
+    <Grid item container justify="space-between" alignItems="center">
+      <FormLabel>{label}</FormLabel>
+      <Switch
+        checked={value}
+        onChange={onChange}
+        value={label}
+        color="primary"
       />
       {value === true && formBuilder(dependents)}
     </Grid>
@@ -81,15 +80,14 @@ function SwitchInput(props) {
 
 
 function BaseForm(props) {
-  const { form, onChange } = props;
+  const { form, onChange, classes } = props;
 
   const formJSX = formBuilder(form, e => console.log(e));
 
 
   return (
-    <div>
-      <h2>BaseForm</h2>
-      <Grid container direction="column" alignItems="flex-end">
+    <div className={classes.w100}>
+      <Grid container direction="column">
         {formJSX}
       </Grid>
     </div>

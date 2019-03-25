@@ -23,13 +23,11 @@ class App extends Component {
     return (
       <Router>
         <AppTheme>
-          <Container>
-            <Switch>
-              <Route path="/statistics/" component={Statistics} />
-              <Route path="/settings" component={Settings} />
-              <Route path="/" component={Timer} />
-            </Switch>
-          </Container>
+          <Switch>
+            <Route path="/statistics/" component={Statistics} />
+            <Route path="/settings" component={Settings} />
+            <Route path="/" component={Timer} />
+          </Switch>
           <BottomNavigation />
         </AppTheme>
       </Router>

@@ -10,10 +10,7 @@ const styles = theme => ({});
 class Settings extends Component {
   render() {
     return (
-      <div>
-        <h2>Settings</h2>
-        <TimerForm />
-      </div>
+      <TimerForm />
     );
   }
 }
