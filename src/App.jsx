@@ -10,7 +10,6 @@ import Statistics from './pages/statistics/Statistics';
 import Settings from './pages/settings/Settings';
 import BottomNavigation from './components/BottomNavigation';
 import AppTheme from './components/AppTheme';
-import Container from './components/Container';
 
 class App extends Component {
   constructor(props) {

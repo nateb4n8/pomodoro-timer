@@ -84,7 +84,7 @@ function timer(state = initialState, action) {
         timeIntervals: [],
         timeRemaining: 0,
       };
-    
+
     case SET_BREAK_COMPLETE:
       return {
         ...state,

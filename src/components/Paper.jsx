@@ -28,7 +28,10 @@ EnhancedPaper.defaultProps = {
 
 EnhancedPaper.propTypes = {
   classes: PropTypes.object.isRequired,
-  children: PropTypes.object,
+  children: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array,
+  ]),
 };
 
 export default withStyles(styles)(EnhancedPaper);

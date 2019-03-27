@@ -6,7 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import WorkIcon from '@material-ui/icons/Work';
 import SettingsIcon from '@material-ui/icons/Settings';
-import ChartIcon from '@material-ui/icons/TableChart';
+// import ChartIcon from '@material-ui/icons/TableChart';
 import { Link } from 'react-router-dom';
 
 class BottomAppBar extends Component {
