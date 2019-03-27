@@ -322,6 +322,8 @@ Timer.defaultProps = {
 const styles = {
   container: {
     height: '100%',
+    marginLeft: -16,
+    marginRight: -16,
   },
 };
 

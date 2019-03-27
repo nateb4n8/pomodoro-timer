@@ -3,10 +3,11 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { withStyles } from '@material-ui/core/styles';
 import { Grid } from '@material-ui/core';
+import moment from 'moment';
 
 import Paper from '../../components/Paper';
 import BaseForm from './BaseForm';
-import { toggleLongBreak } from '../../actions/settings';
+import { toggleLongBreak, updateWorkDuration } from '../../actions/settings';
 
 const styles = theme => ({});
 
@@ -18,18 +19,26 @@ class TimerForm extends Component {
   }
 
   render() {
-    const { longBreakEnabled, dispatch } = this.props;
+    const {
+      workDuration,
+      breakDuration,
+      longBreakEnabled,
+      dispatch,
+    } = this.props;
 
     const form = [
       {
         label: 'Work Duration',
         type: 'number',
-        value: 20,
+        value: moment.duration(workDuration, 'second').asMinutes(),
+        onChange: value => dispatch(updateWorkDuration(
+          value === '0' || value === '' ? 1 : Number(value),
+        )),
       },
       {
         label: 'Break Duration',
         type: 'number',
-        value: 5,
+        value: moment.duration(breakDuration, 'second').asMinutes(),
       },
       {
         label: 'Long Break Enabled',

@@ -52,7 +52,7 @@ function NumberInput({ label, value, onChange }) {
     <TextField
       label={label}
       value={value}
-      onChange={onChange}
+      onChange={event => onChange(event.target.value)}
       type="number"
       InputLabelProps={{
         shrink: true,

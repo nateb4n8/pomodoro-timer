@@ -6,6 +6,11 @@ import {
   TOGGLE_LONG_BREAK,
 } from '../actions/settings';
 
+
+function minutesToSeconds(minutes) {
+  return moment.duration(minutes, 'minutes').asSeconds();
+}
+
 const initialState = {
   workDuration: moment.duration(25, 'minutes').asSeconds(),
   breakDuration: moment.duration(5, 'minutes').asSeconds(),
@@ -17,7 +22,7 @@ function settings(state = initialState, action) {
     case UPDATE_WORK_DURATION:
       return {
         ...state,
-        workDuration: action.workDuration,
+        workDuration: moment.duration(action.workDuration, 'minutes').asSeconds(),
       };
 
     case UPDATE_BREAK_DURATION:
