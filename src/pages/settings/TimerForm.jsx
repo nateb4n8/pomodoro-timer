@@ -7,7 +7,13 @@ import moment from 'moment';
 
 import Paper from '../../components/Paper';
 import BaseForm from './BaseForm';
-import { toggleLongBreak, updateWorkDuration } from '../../actions/settings';
+import {
+  toggleLongBreak,
+  updateWorkDuration,
+  updateBreakDuration,
+  updateLongBreakDuration,
+  updateWorkSessions,
+} from '../../actions/settings';
 
 const styles = theme => ({});
 
@@ -23,6 +29,8 @@ class TimerForm extends Component {
       workDuration,
       breakDuration,
       longBreakEnabled,
+      longBreakDuration,
+      workSessions,
       dispatch,
     } = this.props;
 
@@ -39,6 +47,9 @@ class TimerForm extends Component {
         label: 'Break Duration',
         type: 'number',
         value: moment.duration(breakDuration, 'second').asMinutes(),
+        onChange: value => dispatch(updateBreakDuration(
+          value === '0' || value === '' ? 1 : Number(value),
+        )),
       },
       {
         label: 'Long Break Enabled',
@@ -49,12 +60,18 @@ class TimerForm extends Component {
           {
             label: 'Long Break Duration',
             type: 'number',
-            value: 10,
+            value: moment.duration(longBreakDuration, 'second').asMinutes(),
+            onChange: value => dispatch(updateLongBreakDuration(
+              value === '0' || value === '' ? 1 : Number(value),
+            )),
           },
           {
             label: 'Work sessions before long break',
             type: 'number',
-            value: 2,
+            value: workSessions,
+            onChange: value => dispatch(updateWorkSessions(
+              value === '0' || value === '' ? 1 : Number(value),
+            )),
           },
         ],
       },
