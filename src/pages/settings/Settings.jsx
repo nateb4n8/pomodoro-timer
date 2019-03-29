@@ -4,13 +4,21 @@ import { withStyles } from '@material-ui/core/styles';
 import TimerForm from './TimerForm';
 
 
-const styles = theme => ({});
+const styles = theme => ({
+  root: {
+    paddingBottom: 64,
+  },
+});
 
 
 class Settings extends Component {
   render() {
+    const { classes } = this.props;
+
     return (
-      <TimerForm />
+      <div className={classes.root}>
+        <TimerForm />
+      </div>
     );
   }
 }

@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-import Timer from './pages/timer/Timer';
+import Timer from './pages/timer/TimerLocal';
 import Statistics from './pages/statistics/Statistics';
 import Settings from './pages/settings/Settings';
 import BottomNavigation from './components/BottomNavigation';

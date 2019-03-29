@@ -10,7 +10,7 @@ import {
 
 
 const initialState = {
-  workDuration: moment.duration(25, 'minutes').asSeconds(),
+  workDuration: moment.duration(0.1, 'minutes').asSeconds(),
   breakDuration: moment.duration(5, 'minutes').asSeconds(),
   longBreakEnabled: false,
   longBreakDuration: moment.duration(10, 'minutes').asSeconds(),

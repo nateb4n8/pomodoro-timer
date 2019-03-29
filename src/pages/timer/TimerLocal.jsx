@@ -17,15 +17,15 @@ import Fab from './FloatButton';
 import Notification from './Notification';
 import Confirmation from './Confirmation';
 
-import {
-  resetSession,
-  updateTimer,
-  setWorkStarted,
-  setPaused,
-  workComplete,
-  setBreakComplete,
-  setBreakStarted,
-} from '../../actions/timer';
+// import {
+//   resetSession,
+//   updateTimer,
+//   setWorkStarted,
+//   setPaused,
+//   workComplete,
+//   setBreakComplete,
+//   setBreakStarted,
+// } from '../../actions/timer';
 
 
 const IDLE = 'IDLE';
@@ -64,16 +64,17 @@ class Timer extends Component {
       stopRequest: false,
       breakRequest: false,
       breakSnackbarOpen: false,
+
+      duration: props.workDuration,
+      sessionsComplete: 0,
+      status: IDLE,
+      timeRemaining: props.workDuration,
+      type: 'WORK',
+      timeIntervals: [],
     };
   }
 
-  componentDidMount() {
-    const { status } = this.props;
-
-    if (status === RUNNING) {
-      this.startTimer();
-    }
-  }
+  componentDidMount() {}
 
   componentWillUnmount() {
     const { intervalId } = this.state;
@@ -81,8 +82,26 @@ class Timer extends Component {
     clearInterval(intervalId);
   }
 
-  getTimeRemaining = () => {
-    const { startTime, duration, timeIntervals } = this.props;
+  // getTimeRemaining = () => {
+  //   const { startTime, duration, timeIntervals } = this.props;
+
+  // let timeElapsed = moment.duration(
+  //   moment().diff(
+  //     moment(startTime || new Date()),
+  //   ),
+  // );
+  //   timeElapsed = Math.round(timeElapsed.as('seconds'));
+
+  //   timeElapsed += timeIntervals.reduce((a, v) => a + v, 0);
+
+  //   return duration - timeElapsed;
+  // }
+
+  timerWrapper = () => {
+    const { workDuration } = this.props;
+    const {
+      sessionsComplete, startTime, duration, type, timeIntervals,
+    } = this.state;
 
     let timeElapsed = moment.duration(
       moment().diff(
@@ -90,69 +109,72 @@ class Timer extends Component {
       ),
     );
     timeElapsed = Math.round(timeElapsed.as('seconds'));
-
     timeElapsed += timeIntervals.reduce((a, v) => a + v, 0);
 
-    return duration - timeElapsed;
-  }
-
-  timerWrapper = () => {
-    const { dispatch, type } = this.props;
-
-    const timeRemaining = this.getTimeRemaining();
+    const timeRemaining = Math.round(duration - timeElapsed);
 
     if (timeRemaining <= 0) {
-      if (type === 'WORK') {
-        const { intervalId } = this.state;
-        clearInterval(intervalId);
+      const { intervalId } = this.state;
+      clearInterval(intervalId);
 
+      if (type === 'WORK') {
         this.setState({
           breakRequest: true,
           modalOpen: true,
+          sessionsComplete: sessionsComplete + 1,
+          status: IDLE,
+          timeRemaining: 0,
         });
-        dispatch(workComplete());
       }
       else {
-        const { intervalId } = this.state;
-        clearInterval(intervalId);
-
-        dispatch(setBreakComplete());
-
         this.setState({
           breakSnackbarOpen: true,
+          type: 'WORK',
+          duration: workDuration,
         });
       }
     }
-    else dispatch(updateTimer({ timeRemaining }));
+    else this.setState({ timeRemaining });
   }
 
   resetTimer = () => {
-    // stop timer from updating global state
-    const { intervalId } = this.state;
-    if (intervalId) clearInterval(intervalId);
+    // // stop timer from updating global state
+    // const { intervalId } = this.state;
+    // if (intervalId) clearInterval(intervalId);
 
-    // reset timer to defaults
-    const { dispatch } = this.props;
-    dispatch(resetSession());
+    // // reset timer to defaults
+    // const { dispatch } = this.props;
+    // dispatch(resetSession());
 
-    // close the "are you sure" modal
-    this.setState({ modalOpen: false });
+    // // close the "are you sure" modal
+    // this.setState({ modalOpen: false });
   }
 
   startTimer = () => {
-    const { dispatch } = this.props;
-    dispatch(setWorkStarted());
+    // const { dispatch } = this.props;
+    // dispatch(setWorkStarted());
 
-    const intervalId = setInterval(this.timerWrapper, 1000);
-    this.setState({ intervalId });
+    // const intervalId = setInterval(this.timerWrapper, 1000);
+    // this.setState({ intervalId });
   }
 
   onClickPaused = () => {
-    const { intervalId } = this.state;
+    const { intervalId, startTime, timeIntervals } = this.state;
     clearInterval(intervalId);
 
-    const { dispatch } = this.props;
-    dispatch(setPaused());
+    const now = moment();
+    const prev = moment(startTime);
+    const diff = moment.duration(now.diff(prev)).as('seconds');
+    const res = Math.round(diff);
+
+    this.setState({
+      status: 'PAUSED',
+      startTime: null,
+      timeIntervals: [
+        ...timeIntervals,
+        res,
+      ],
+    });
   }
 
   handleClose = () => {
@@ -170,7 +192,7 @@ class Timer extends Component {
   }
 
   onClickReset = () => {
-    this.resetTimer();
+    // this.resetTimer();
   }
 
   onClickStop = () => {
@@ -181,30 +203,40 @@ class Timer extends Component {
   }
 
   onClickStartWork = () => {
-    const { dispatch } = this.props;
-    dispatch(setWorkStarted());
+    // const { dispatch } = this.props;
+    // dispatch(setWorkStarted());
 
     const intervalId = setInterval(this.timerWrapper, 1000);
-    this.setState({ intervalId });
+    this.setState({
+      startTime: new Date(),
+      intervalId,
+      status: RUNNING,
+    });
   }
 
   onClickStartBreak = () => {
-    const { dispatch } = this.props;
-    dispatch(setBreakStarted());
+    // const { dispatch } = this.props;
+    // dispatch(setBreakStarted());
 
-    const intervalId = setInterval(this.timerWrapper, 1000);
-    this.setState({ intervalId });
+    // const intervalId = setInterval(this.timerWrapper, 1000);
+    // this.setState({ intervalId });
   }
 
   render() {
+    const { classes } = this.props;
+    const { longBreakEnabled, workSessions } = this.props;
     const {
-      classes, status, duration, sessionAmt, completeAmt,
-    } = this.props;
-    const {
-      modalOpen, breakRequest, stopRequest, breakSnackbarOpen,
+      modalOpen,
+      breakRequest,
+      stopRequest,
+      breakSnackbarOpen,
+
+      duration,
+      sessionsComplete,
+      status,
+      timeRemaining,
     } = this.state;
 
-    const timeRemaining = this.getTimeRemaining();
     const remaining = moment.duration(timeRemaining, 'seconds');
 
     const minutes = remaining.minutes();
@@ -224,10 +256,12 @@ class Timer extends Component {
       >
 
         <Grid item>
-          <CompletedSessions
-            sessionAmt={sessionAmt}
-            completeAmt={completeAmt}
-          />
+          { longBreakEnabled && (
+            <CompletedSessions
+              sessionAmt={workSessions}
+              completeAmt={sessionsComplete}
+            />)
+          }
         </Grid>
 
         <Grid item>
@@ -304,15 +338,9 @@ class Timer extends Component {
 
 Timer.propTypes = {
   classes: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
-
-  startTime: PropTypes.object,
-  status: PropTypes.string.isRequired,
-  sessionAmt: PropTypes.number.isRequired,
-  completeAmt: PropTypes.number.isRequired,
-  duration: PropTypes.number.isRequired,
-  type: PropTypes.string.isRequired,
-  timeIntervals: PropTypes.array.isRequired,
+  workDuration: PropTypes.number.isRequired,
+  longBreakEnabled: PropTypes.bool.isRequired,
+  workSessions: PropTypes.number.isRequired,
 };
 
 Timer.defaultProps = {
@@ -327,10 +355,9 @@ const styles = {
   },
 };
 
-function mapStateToProps({ timer, settings }) {
+function mapStateToProps({ settings }) {
   return {
-    ...timer,
-    settings,
+    ...settings,
   };
 }
 
