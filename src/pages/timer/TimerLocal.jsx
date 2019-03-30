@@ -124,13 +124,17 @@ class Timer extends Component {
           sessionsComplete: sessionsComplete + 1,
           status: IDLE,
           timeRemaining: 0,
+          timeIntervals: [],
         });
       }
       else {
         this.setState({
           breakSnackbarOpen: true,
+          status: IDLE,
           type: 'WORK',
           duration: workDuration,
+          timeRemaining: workDuration,
+          timeIntervals: [],
         });
       }
     }
@@ -138,16 +142,23 @@ class Timer extends Component {
   }
 
   resetTimer = () => {
-    // // stop timer from updating global state
-    // const { intervalId } = this.state;
-    // if (intervalId) clearInterval(intervalId);
+    const { workDuration } = this.props;
 
-    // // reset timer to defaults
-    // const { dispatch } = this.props;
-    // dispatch(resetSession());
+    // stop timer from updating global state
+    const { intervalId } = this.state;
+    if (intervalId) clearInterval(intervalId);
 
-    // // close the "are you sure" modal
-    // this.setState({ modalOpen: false });
+    // reset timer to defaults
+    // close the "are you sure" modal
+    this.setState({
+      modalOpen: false,
+      duration: workDuration,
+      sessionsComplete: 0,
+      status: IDLE,
+      timeRemaining: workDuration,
+      type: 'WORK',
+      timeIntervals: [],
+    });
   }
 
   startTimer = () => {
@@ -203,23 +214,32 @@ class Timer extends Component {
   }
 
   onClickStartWork = () => {
-    // const { dispatch } = this.props;
-    // dispatch(setWorkStarted());
+    const { workDuration } = this.props;
+    const intervalId = setInterval(this.timerWrapper, 1000);
+    this.setState({
+      startTime: new Date(),
+      intervalId,
+      status: RUNNING,
+      type: 'WORK',
+      duration: workDuration,
+      timeRemaining: workDuration,
+      timeIntervals: [],
+    });
+  }
+
+  onClickStartBreak = () => {
+    const { breakDuration } = this.props;
 
     const intervalId = setInterval(this.timerWrapper, 1000);
     this.setState({
       startTime: new Date(),
       intervalId,
       status: RUNNING,
+      type: 'BREAK',
+      duration: breakDuration,
+      timeRemaining: breakDuration,
+      timeIntervals: [],
     });
-  }
-
-  onClickStartBreak = () => {
-    // const { dispatch } = this.props;
-    // dispatch(setBreakStarted());
-
-    // const intervalId = setInterval(this.timerWrapper, 1000);
-    // this.setState({ intervalId });
   }
 
   render() {
@@ -339,6 +359,7 @@ class Timer extends Component {
 Timer.propTypes = {
   classes: PropTypes.object.isRequired,
   workDuration: PropTypes.number.isRequired,
+  breakDuration: PropTypes.number.isRequired,
   longBreakEnabled: PropTypes.bool.isRequired,
   workSessions: PropTypes.number.isRequired,
 };
