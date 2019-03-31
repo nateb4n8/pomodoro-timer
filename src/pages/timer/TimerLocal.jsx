@@ -152,6 +152,8 @@ class Timer extends Component {
     // close the "are you sure" modal
     this.setState({
       modalOpen: false,
+      breakRequest: false,
+      stopRequest: false,
       duration: workDuration,
       sessionsComplete: 0,
       status: IDLE,
@@ -167,25 +169,6 @@ class Timer extends Component {
 
     // const intervalId = setInterval(this.timerWrapper, 1000);
     // this.setState({ intervalId });
-  }
-
-  onClickPaused = () => {
-    const { intervalId, startTime, timeIntervals } = this.state;
-    clearInterval(intervalId);
-
-    const now = moment();
-    const prev = moment(startTime);
-    const diff = moment.duration(now.diff(prev)).as('seconds');
-    const res = Math.round(diff);
-
-    this.setState({
-      status: 'PAUSED',
-      startTime: null,
-      timeIntervals: [
-        ...timeIntervals,
-        res,
-      ],
-    });
   }
 
   handleClose = () => {
@@ -227,9 +210,17 @@ class Timer extends Component {
     });
   }
 
+  onClickResume = () => {
+    const intervalId = setInterval(this.timerWrapper, 1000);
+    this.setState({
+      startTime: new Date(),
+      intervalId,
+      status: RUNNING,
+    });
+  }
+
   onClickStartBreak = () => {
     const { breakDuration } = this.props;
-
     const intervalId = setInterval(this.timerWrapper, 1000);
     this.setState({
       startTime: new Date(),
@@ -239,6 +230,22 @@ class Timer extends Component {
       duration: breakDuration,
       timeRemaining: breakDuration,
       timeIntervals: [],
+    });
+  }
+
+  onClickPaused = () => {
+    const { intervalId, startTime, timeIntervals } = this.state;
+    clearInterval(intervalId);
+
+    const now = moment();
+    const prev = moment(startTime);
+    const diff = moment.duration(now.diff(prev)).as('seconds');
+    const res = Math.round(diff);
+
+    this.setState({
+      status: 'PAUSED',
+      startTime: null,
+      timeIntervals: [...timeIntervals, res],
     });
   }
 
@@ -308,18 +315,37 @@ class Timer extends Component {
 
         <Grid item>
           <Grid container justify="center" alignItems="center">
-            <Grid item>
-              { status === IDLE || status === PAUSED
-                ? <StartButton onClick={this.onClickStartWork} />
-                : <PauseButton onClick={this.onClickPaused} />
-              }
-            </Grid>
-            <Grid item>
-              { status === RUNNING || status === PAUSED
-                ? <StopButton onClick={this.onClickStop} />
-                : <BreakButton onClick={this.onClickStartBreak} />
-              }
-            </Grid>
+
+            { status === IDLE && (
+              <Grid container justify="center" alignItems="center">
+                <Grid item>
+                  <StartButton onClick={this.onClickStartWork} />
+                </Grid>
+                <Grid item>
+                  <BreakButton onClick={this.onClickStartBreak} />
+                </Grid>
+              </Grid>)
+            }
+            { status === PAUSED && (
+              <Grid container justify="center" alignItems="center">
+                <Grid item>
+                  <StartButton onClick={this.onClickResume} />
+                </Grid>
+                <Grid item>
+                  <StopButton onClick={this.onClickStop} />
+                </Grid>
+              </Grid>)
+            }
+            { status === RUNNING && (
+              <Grid container justify="center" alignItems="center">
+                <Grid item>
+                  <PauseButton onClick={this.onClickPaused} />
+                </Grid>
+                <Grid item>
+                  <StopButton onClick={this.onClickStop} />
+                </Grid>
+              </Grid>)
+            }
           </Grid>
         </Grid>
 
