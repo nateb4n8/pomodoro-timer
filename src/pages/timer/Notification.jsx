@@ -22,14 +22,11 @@ const styles = theme => ({
     display: 'flex',
     alignItems: 'center',
   },
-  breakOver: {
-    backgroundColor: amber[700],
-  },
 });
 
 function Notification(props) {
   const {
-    classes, open, onClose, onClick, msg, timeout,
+    classes, open, onClose, onClick, msg, timeout, color,
   } = props;
 
   return (
@@ -43,7 +40,9 @@ function Notification(props) {
       autoHideDuration={timeout}
     >
       <SnackbarContent
-        className={classes.breakOver}
+        style={{
+          backgroundColor: color,
+        }}
         aria-describedby="notification"
         message={
           (
@@ -68,6 +67,10 @@ function Notification(props) {
   );
 }
 
+Notification.defaultProps = {
+  color: amber[700],
+};
+
 Notification.propTypes = {
   classes: PropTypes.object.isRequired,
   open: PropTypes.bool.isRequired,
@@ -75,6 +78,7 @@ Notification.propTypes = {
   onClose: PropTypes.func.isRequired,
   msg: PropTypes.string.isRequired,
   timeout: PropTypes.number.isRequired,
+  color: PropTypes.string,
 };
 
 export default withStyles(styles)(Notification);

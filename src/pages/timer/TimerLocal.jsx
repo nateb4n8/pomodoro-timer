@@ -64,6 +64,7 @@ class Timer extends Component {
       stopRequest: false,
       breakRequest: false,
       breakSnackbarOpen: false,
+      sessionsCompleteSnackbarOpen: false,
 
       duration: props.workDuration,
       sessionsComplete: 0,
@@ -98,7 +99,7 @@ class Timer extends Component {
   // }
 
   timerWrapper = () => {
-    const { workDuration } = this.props;
+    const { workDuration, workSessions } = this.props;
     const {
       sessionsComplete, startTime, duration, type, timeIntervals,
     } = this.state;
@@ -118,6 +119,8 @@ class Timer extends Component {
       clearInterval(intervalId);
 
       if (type === 'WORK') {
+        const workSessionsDone = sessionsComplete === workSessions - 1;
+
         this.setState({
           breakRequest: true,
           modalOpen: true,
@@ -125,6 +128,7 @@ class Timer extends Component {
           status: IDLE,
           timeRemaining: 0,
           timeIntervals: [],
+          sessionsCompleteSnackbarOpen: workSessionsDone,
         });
       }
       else {
@@ -182,6 +186,12 @@ class Timer extends Component {
   closeBreakSnackbar = () => {
     this.setState({
       breakSnackbarOpen: false,
+    });
+  }
+
+  closeCompleteSnackbar = () => {
+    this.setState({
+      sessionsCompleteSnackbarOpen: false,
     });
   }
 
@@ -262,6 +272,7 @@ class Timer extends Component {
       sessionsComplete,
       status,
       timeRemaining,
+      sessionsCompleteSnackbarOpen,
     } = this.state;
 
     const remaining = moment.duration(timeRemaining, 'seconds');
@@ -376,6 +387,15 @@ class Timer extends Component {
           onClick={this.closeBreakSnackbar}
           msg="Break time over!"
           timeout={5000}
+        />
+
+        <Notification
+          open={sessionsCompleteSnackbarOpen}
+          onClose={this.closeCompleteSnackbar}
+          onClick={this.closeCompleteSnackbar}
+          msg="Congratulations! All work sessions are complete."
+          timeout={10000}
+          color="#4caf50"
         />
       </Grid>
     );
