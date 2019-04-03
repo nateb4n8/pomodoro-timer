@@ -120,11 +120,13 @@ class Timer extends Component {
 
       if (type === 'WORK') {
         const workSessionsDone = sessionsComplete === workSessions - 1;
-
+        const longBreakRequest = workSessionsDone;
+        const breakRequest = !longBreakRequest;
         this.setState({
-          breakRequest: true,
+          breakRequest,
+          longBreakRequest,
           modalOpen: true,
-          sessionsComplete: sessionsComplete + 1,
+          sessionsComplete: workSessionsDone ? 0 : sessionsComplete + 1,
           status: IDLE,
           timeRemaining: 0,
           timeIntervals: [],
@@ -243,6 +245,21 @@ class Timer extends Component {
     });
   }
 
+  onClickStartLongBreak = () => {
+    const { longBreakDuration } = this.props;
+    const intervalId = setInterval(this.timerWrapper, 1000);
+    this.setState({
+      startTime: new Date(),
+      intervalId,
+      status: RUNNING,
+      type: 'BREAK',
+      duration: longBreakDuration,
+      timeRemaining: longBreakDuration,
+      timeIntervals: [],
+      // sessionsComplete: 0,
+    });
+  }
+
   onClickPaused = () => {
     const { intervalId, startTime, timeIntervals } = this.state;
     clearInterval(intervalId);
@@ -265,6 +282,7 @@ class Timer extends Component {
     const {
       modalOpen,
       breakRequest,
+      longBreakRequest,
       stopRequest,
       breakSnackbarOpen,
 
@@ -370,6 +388,16 @@ class Timer extends Component {
             msg="Do you want to take a break?"
           />)
         }
+        { longBreakRequest
+          && (
+          <Confirmation
+            open={modalOpen}
+            onClose={this.handleClose}
+            onClickYes={() => { this.onClickStartLongBreak(); this.handleClose(); }}
+            onClickNo={() => { this.onClickStartWork(); this.handleClose(); }}
+            msg="Do you want to take a LONG break?"
+          />)
+        }
         { stopRequest
           && (
           <Confirmation
@@ -407,6 +435,7 @@ Timer.propTypes = {
   workDuration: PropTypes.number.isRequired,
   breakDuration: PropTypes.number.isRequired,
   longBreakEnabled: PropTypes.bool.isRequired,
+  longBreakDuration: PropTypes.number.isRequired,
   workSessions: PropTypes.number.isRequired,
 };
 
