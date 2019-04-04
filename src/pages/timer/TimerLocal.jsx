@@ -99,7 +99,7 @@ class Timer extends Component {
   // }
 
   timerWrapper = () => {
-    const { workDuration, workSessions } = this.props;
+    const { workDuration, workSessions, longBreakEnabled } = this.props;
     const {
       sessionsComplete, startTime, duration, type, timeIntervals,
     } = this.state;
@@ -119,19 +119,30 @@ class Timer extends Component {
       clearInterval(intervalId);
 
       if (type === 'WORK') {
-        const workSessionsDone = sessionsComplete === workSessions - 1;
-        const longBreakRequest = workSessionsDone;
-        const breakRequest = !longBreakRequest;
-        this.setState({
-          breakRequest,
-          longBreakRequest,
-          modalOpen: true,
-          sessionsComplete: workSessionsDone ? 0 : sessionsComplete + 1,
-          status: IDLE,
-          timeRemaining: 0,
-          timeIntervals: [],
-          sessionsCompleteSnackbarOpen: workSessionsDone,
-        });
+        if (longBreakEnabled) {
+          const workSessionsDone = sessionsComplete === workSessions - 1;
+          const longBreakRequest = workSessionsDone;
+          const breakRequest = !longBreakRequest;
+          this.setState({
+            breakRequest,
+            longBreakRequest,
+            modalOpen: true,
+            sessionsComplete: workSessionsDone ? 0 : sessionsComplete + 1,
+            status: IDLE,
+            timeRemaining: 0,
+            timeIntervals: [],
+            sessionsCompleteSnackbarOpen: workSessionsDone,
+          });
+        }
+        else {
+          this.setState({
+            breakRequest: true,
+            modalOpen: true,
+            status: IDLE,
+            timeRemaining: 0,
+            timeIntervals: [],
+          });
+        }
       }
       else {
         this.setState({
